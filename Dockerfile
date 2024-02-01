@@ -1,18 +1,53 @@
-FROM openjdk:11.0.11-jre-slim-buster as builder
+FROM python:3.11.4-buster as builder
+
+RUN apt-get -y update
+RUN apt-get -y upgrade
+RUN apt-get -y install tree
+ENV PIPENV_VENV_IN_PROJECT=1
+
+# ENV PIPENV_VENV_IN_PROJECT=1 is important: it causes the resuling virtual environment to be created as /app/.venv. Without this the environment gets created somewhere surprising, such as /root/.local/share/virtualenvs/app-4PlAip0Q - which makes it much harder to write automation scripts later on.
+
+RUN python -m pip install --upgrade pip
+RUN pip install --no-cache-dir pipenv
+RUN pip install --no-cache-dir jupyter
+RUN pip install --no-cache-dir py4j
+RUN pip install --no-cache-dir findspark
+
+#############################################
+# install java and spark and hadoop
+# Java is required for scala and scala is required for Spark
+############################################
+
+# VERSIONS
+
+ENV SPARK_VERSION=3.5.0 \
+HADOOP_VERSION=3.3.4 \
+SPARK_HOME=/opt/spark \
+PYTHONHASHSEED=1 \
+JAVA_VERSION=11
+
+RUN apt-get update --yes && \
+    apt-get install --yes --no-install-recommends \
+    "openjdk-${JAVA_VERSION}-jre-headless" \
+    ca-certificates-java  \
+    vim \
+    wget \
+    ssh \
+    net-tools \
+    ca-certificates \
+    curl && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
 
 # Add Dependencies for PySpark
-RUN apt-get update && apt-get install -y curl vim wget software-properties-common ssh net-tools ca-certificates python3 python3-pip python3-numpy python3-matplotlib python3-scipy python3-pandas python3-simpy
+#RUN apt-get install -yes vim wget software-properties-common ssh net-tools ca-certificates  python3-pip python3-numpy python3-matplotlib python3-scipy python3-pandas python3-simpy
 
-RUN update-alternatives --install "/usr/bin/python" "python" "$(which python3)" 1
+RUN java --version
 
-# Fix the value of PYTHONHASHSEED
-# Note: this is needed when you use Python 3.3 or greater
-ENV SPARK_VERSION=3.0.2 \
-HADOOP_VERSION=3.2 \
-SPARK_HOME=/opt/spark \
-PYTHONHASHSEED=1
+RUN update-alternatives --install "/usr/bin/python" "python" "/usr/local/bin/python3.11" 1
+RUN ln -s /usr/local/bin/python3.11 /usr/bin/python3.11
 
-RUN wget --no-verbose -O apache-spark.tgz "https://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz" \
+RUN wget --no-verbose -O apache-spark.tgz "https://archive.apache.org/dist/spark/spark-3.5.0/spark-3.5.0-bin-hadoop3.tgz" \
 && mkdir -p /opt/spark \
 && tar -xf apache-spark.tgz -C /opt/spark --strip-components=1 \
 && rm apache-spark.tgz

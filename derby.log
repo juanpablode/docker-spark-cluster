@@ -1,0 +1,13 @@
+----------------------------------------------------------------
+Mon Jan 29 18:41:18 ART 2024:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.14.2.0 - (1828579): instance a816c00e-018d-572b-62a5-00000eebb010 
+on database directory /home/jdecou/workspace/docker-spark-cluster/metastore_db with class loader sun.misc.Launcher$AppClassLoader@238e0d81 
+Loaded from file:/opt/spark-3.5.0-bin-hadoop3/jars/derby-10.14.2.0.jar
+java.vendor=Oracle Corporation
+java.runtime.version=1.8.0_281-b09
+user.dir=/home/jdecou/workspace/docker-spark-cluster
+os.name=Linux
+os.arch=amd64
+os.version=5.15.0-53-generic
+derby.system.home=null
+Database Class Loader started - derby.database.classpath=''
